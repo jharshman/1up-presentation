@@ -1,21 +1,21 @@
-# +1UP CI/CD
++1UP CI/CD
 Josh Harshman
 20 Oct 2020
 Senior Software Engineer, Bitly
 josh.harshman@bit.ly
 
-## About Me
+* About Me
 - Senior Software Engineer @ Bitly
 - Been using Go for a while - big fan
 - Maintainer of Cobra and Pflag
 
-## What is Skaffold?
+* What is Skaffold?
 Skaffold is a command line tool that facilitates continuous development for Kubernetes native applications.
 
 It provides helpful building blocks for creating CI/CD pipelines which will
-* build
-* publish
-* deploy
+- build
+- publish
+- deploy
 
 https://skaffold.dev
 
@@ -24,26 +24,26 @@ https://skaffold.dev
 : More information and documentation is available on their website skaffold.dev. I encourage everyone to read the docs
 : as they are short and easily digestible.
 
-## Pluggable
+* Pluggable
 Skaffold is built to be extensible.
 
 Build:
-* Docker 
-* Jib
-* Bazel
-* BuildPacks
-* Custom
+- Docker 
+- Jib
+- Bazel
+- BuildPacks
+- Custom
 
 Deploy:
-* Kubectl 
-* Kustomize
-* Helm
+- Kubectl 
+- Kustomize
+- Helm
 
 : Skaffold is built to be pluggable. By this I mean that it supports various methods of building and deploying.
 : It supports technologies like Docker and KubeCTL, but also others like CNF BuildPacks and Helm or Kustomize.
 : It also allows you to build remotely with Google Cloud Build which is wonderful if your machine is hard up for RAM like mine is.
 
-## Our current setup (build)
+* Our current setup (build)
 cloudbuild-release.yaml:
 ```
 docker pull "gcr.io/${PROJECT_ID}/${_IMAGE}:${SHORT_SHA}" || \
@@ -53,16 +53,16 @@ docker build  --build-arg VERSION=${COMMIT_SHA} \
   -f "${_APP}/Dockerfile" .
 ```
 
-* Not bad
-* Easy to understand
-* A bit verbose
+- Not bad
+- Easy to understand
+- A bit verbose
 
 : Here is a snippet of what powers our build and publish step.
 : It's pretty straightforward and uses two commands `docker pull` and `docker build`.
 : If the image tag already exists, the build isn't executed again.
 : One issue here is that tags are mutable.
 
-## Skaffold Build
+* Skaffold Build
 Build & Push is reduced to the following line
 ```
 skaffold build --file-output=${ARTIFACT_DIR}/fishnet.json
@@ -76,7 +76,7 @@ skaffold build --file-output=${ARTIFACT_DIR}/fishnet.json
 : `skaffold run` which will perform the entire pipeline (build, publish, deploy). But
 : I find it nice to have explicit steps.
 
-## Our current setup (deploy)
+* Our current setup (deploy)
 cloudbuild-release.yaml:
 ```
 set -e
@@ -92,9 +92,9 @@ for SERVICE in queuereader_fishnet; do
 done
 ```
 
-* Not fun to read
-* Looping and Sed
-* Extra scripting to track deploy result
+- Not fun to read
+- Looping and Sed
+- Extra scripting to track deploy result
 
 : Our current deploy relies on some looping and sed magic that really takes away from readability.
 : We have numerous kubectl commands and extra logic in order to track the result of a deploy.
@@ -102,15 +102,15 @@ done
 : be pretty intimidating to our individuals on other teams who want to get started with GKE.
 : And again here it uses a mutable tag.
 
-## Skaffold Deploy
+* Skaffold Deploy
 deploy replaced with skaffold:
 ```
 skaffold deploy --profile=${SKAFFOLD_PROFILE} --build-artifacts=${ARTIFACT_DIR}/fishnet.json
 ```
 
-* less complex
-* does the job
-* simple configuration
+- less complex
+- does the job
+- simple configuration
 
 
 : With Skaffold, we are able to remove much of this complication.
@@ -120,7 +120,7 @@ skaffold deploy --profile=${SKAFFOLD_PROFILE} --build-artifacts=${ARTIFACT_DIR}/
 : which is defined in the skaffold.yaml deploy stanza.
 : This is in contrast to having the timeout specified in the kubectl command in cloudbuild.yaml
 
-## Simple Configuration
+* Simple Configuration
 ```
 apiVersion: skaffold/v2alpha1
 kind: Config
