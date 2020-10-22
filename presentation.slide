@@ -1,7 +1,7 @@
 +1UP CI/CD
+
 Josh Harshman
 20 Oct 2020
-Senior Software Engineer, Bitly
 josh.harshman@bit.ly
 
 * About Me
@@ -45,13 +45,8 @@ Deploy:
 
 * Our current setup (build)
 cloudbuild-release.yaml:
-```
-docker pull "gcr.io/${PROJECT_ID}/${_IMAGE}:${SHORT_SHA}" || \
-docker build  --build-arg VERSION=${COMMIT_SHA} \
-  -t "gcr.io/${PROJECT_ID}/${_IMAGE}:${SHORT_SHA}" \
-  -t "gcr.io/${PROJECT_ID}/${_IMAGE}:latest" \
-  -f "${_APP}/Dockerfile" .
-```
+
+.code snippet1.sh
 
 - Not bad
 - Easy to understand
@@ -64,9 +59,8 @@ docker build  --build-arg VERSION=${COMMIT_SHA} \
 
 * Skaffold Build
 Build & Push is reduced to the following line
-```
-skaffold build --file-output=${ARTIFACT_DIR}/fishnet.json
-```
+
+.code snippet2.sh
 
 : To both build and publish a container image, all you need is this one-liner.
 : Skaffold will leverage your Dockerfile to execute the build, and will then tag
@@ -78,19 +72,8 @@ skaffold build --file-output=${ARTIFACT_DIR}/fishnet.json
 
 * Our current setup (deploy)
 cloudbuild-release.yaml:
-```
-set -e
-gcloud container clusters get-credentials --region "$$CLOUDSDK_COMPUTE_REGION" "$$CLOUDSDK_CONTAINER_CLUSTER"
-for SERVICE in queuereader_fishnet; do
-  sed "s/gcr.io\/$${PROJECT_ID}\/$${IMAGE/\//\\\/}/gcr.io\/${PROJECT_ID}\/$${IMAGE/\//\\\/}:${SHORT_SHA}/g" \
-  $${APP}/conf/deployment_$${SERVICE}_$${CLOUDSDK_CONTAINER_CLUSTER}.yaml \
-  | kubectl apply -f -
-  # Get the latest revision (avoid always watching '0' the latest revision which will pick up new deployments)
-  REVISION=$$(kubectl -n $${APP} rollout history deployment $${SERVICE//_/-} \
-  -o 'jsonpath={.metadata.annotations.deployment\.kubernetes\.io/revision}')
-  kubectl -n $${APP} rollout status deployment $${SERVICE//_/-} --revision=$${REVISION} --watch=true --timeout=5m
-done
-```
+
+.code snippet3.sh
 
 - Not fun to read
 - Looping and Sed
@@ -104,9 +87,8 @@ done
 
 * Skaffold Deploy
 deploy replaced with skaffold:
-```
-skaffold deploy --profile=${SKAFFOLD_PROFILE} --build-artifacts=${ARTIFACT_DIR}/fishnet.json
-```
+
+.code snippet4.sh
 
 - less complex
 - does the job
@@ -121,29 +103,8 @@ skaffold deploy --profile=${SKAFFOLD_PROFILE} --build-artifacts=${ARTIFACT_DIR}/
 : This is in contrast to having the timeout specified in the kubectl command in cloudbuild.yaml
 
 * Simple Configuration
-```
-apiVersion: skaffold/v2alpha1
-kind: Config
-metadata:
-  name: queuereader-fishnet
-build:
-  tagPolicy:
-    gitCommit: {}
-  artifacts:
-  - image: gcr.io/bitly-gcp-prod/fishnet/fishnet
-    docker:
-      dockerfile: fishnet/Dockerfile
-deploy:
-  kubectl:
-    manifests:
-    - conf/staging.yaml
-profiles:
-  - name: prod
-    deploy:
-      kubectl:
-        manifests:
-        - conf/production.yaml
-```
+
+.code snippet5.sh
 
 : Here is a sample configuration for Skaffold.
 : There are two core stanzas here `build` and `deploy`.
