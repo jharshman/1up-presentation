@@ -1,5 +1,4 @@
 # +1UP CI/CD
-
 Josh Harshman
 20 Oct 2020
 Senior Software Engineer, Bitly
@@ -11,7 +10,6 @@ josh.harshman@bit.ly
 - Maintainer of Cobra and Pflag
 
 ## What is Skaffold?
-
 Skaffold is a command line tool that facilitates continuous development for Kubernetes native applications.
 
 It provides helpful building blocks for creating CI/CD pipelines which will
@@ -27,7 +25,6 @@ https://skaffold.dev
 : as they are short and easily digestible.
 
 ## Pluggable
-
 Skaffold is built to be extensible.
 
 Build:
@@ -106,7 +103,6 @@ done
 : And again here it uses a mutable tag.
 
 ## Skaffold Deploy
-
 deploy replaced with skaffold:
 ```
 skaffold deploy --profile=${SKAFFOLD_PROFILE} --build-artifacts=${ARTIFACT_DIR}/fishnet.json
